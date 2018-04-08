@@ -17,7 +17,6 @@
 
 #define MIN 11
 #define MAX 25
-//~ #define MIDDLE (uint8_t) (MIN + MAX)/2
 
 uint8_t DICT[10] = 
 {	
@@ -33,10 +32,12 @@ uint8_t DICT[10] =
 	~(1 << E) // 9
 };
 
+uint8_t PULSE;
+
 uint8_t LEFT_VAL = 8, RIGHT_VAL = 8, CURRENT = 0;
 
 uint16_t TICK, CLOCK, TIME;
-uint8_t PULSE;
+
 
 ISR(TIMER1_OVF_vect) // 122 Hz interrupt frequency
 {
@@ -75,12 +76,12 @@ ISR(TIMER0_COMPA_vect) // 20 KHz interrupt frequency
 	}	
 } 
 
-ISR(TIMER0_COMPB_vect)	// 5 KHz interrupt frequency
+ISR(TIMER1_COMPA_vect)	// 122 Hz interrupt frequency
 {
 	if(CLOCK > TIME)
 	{
 		PULSE = MIN;
-		TIMSK &= ~(1 << OCIE0B);
+		TIMSK &= ~(1 << OCIE1A);
 	}
 	else CLOCK += 1;
 }
@@ -114,6 +115,9 @@ void setupDisplay(void)
 	
 	//~ TCCR1B |= (1 << CS12) | (1 << CS11); // 32 prescaler
 	TCCR1B |= (1 << CS13) | (1 << CS10); // 264 prescaler
+	
+	OCR1A = 120;
+	
 	TIMSK |= (1 << TOIE1);
 }
 
@@ -126,19 +130,10 @@ void setupMotor(void)
 	TCCR0B |= (1 << CS01); // 8 prescaler
 	
 	OCR0A = 50;
-	//~ OCR0B = 200;
 	
 	DDRA |= (1 << MOTOR);
 	
 	TIMSK |= (1 << OCIE0A);	
-}
-
-void delay(uint8_t val)
-{
-	for(uint8_t i = 0; i < val; i++)
-	{
-		_delay_ms(120);
-	}
 }
 
 int main(void)
@@ -162,19 +157,14 @@ int main(void)
 			if(ntimes == 5) 
 			{
 				CLOCK = 0;
-				TIME = (RIGHT_VAL + 1) * 25;
+				TIME = (RIGHT_VAL + 1) * 31;
 				
-				//~ OCR0B = 200;
-				//~ TIMSK |= (1 << OCIE0B);
+				TIMSK |= (1 << OCIE1A);
 				
 				PULSE = ((MAX - MIN)*LEFT_VAL)/9 + MIN;
-				
-				delay(RIGHT_VAL + 1);
 				break;
 			}
 		}
-		
-		PULSE = MIN;
 		_delay_ms(50);
 	}
 	
