@@ -16,7 +16,7 @@
 #define MOTOR PA7
 
 #define MIN 11
-#define MAX 25
+#define MAX 43
 
 uint8_t DICT[10] = 
 {	
@@ -85,7 +85,6 @@ ISR(TIMER1_COMPA_vect)	// 122 Hz interrupt frequency
 	}
 	else CLOCK += 1;
 }
-
 
 uint16_t adc_read(uint8_t ch)
 {
@@ -161,7 +160,7 @@ int main(void)
 				
 				TIMSK |= (1 << OCIE1A);
 				
-				PULSE = ((MAX - MIN)*LEFT_VAL)/9 + MIN;
+				PULSE = ((MAX - MIN)*(LEFT_VAL + 1))/10 + MIN;
 				break;
 			}
 		}
